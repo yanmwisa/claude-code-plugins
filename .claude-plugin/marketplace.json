@@ -1,0 +1,23 @@
+{
+  "name": "yanmwisa",
+  "owner": {
+    "name": "Yannick (yanmwisa)"
+  },
+  "metadata": {
+    "description": "Function-hook plugins for Claude Code: a self-opening task band and multi-step next-prompt sequences."
+  },
+  "plugins": [
+    {
+      "name": "panneau-taches",
+      "source": "./panneau-taches",
+      "description": "A task band above the prompt that opens by itself: Claude plans multi-step work, ticks each task as it goes, and the band closes when everything is done.",
+      "category": "productivity"
+    },
+    {
+      "name": "next-steps-sequence",
+      "source": "./next-steps-sequence",
+      "description": "A variant of next-steps: tick several suggested next prompts, in the order you choose, and run them as a sequence, one step per turn.",
+      "category": "productivity"
+    }
+  ]
+}
