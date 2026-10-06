@@ -7,11 +7,9 @@ next:
   1: ☑ ② Run the tests
   2: ☐ Commit
   3: ☑ ① Push the branch
-Ordre : 3 puis 1
-4 Lancer la séquence   5 Éditer d'abord   6 Tout   0 Fermer
+Order: 3 then 1
+4 Run the sequence   5 Edit first   6 All   0 Close
 ```
-
-*Interface labels are in French: "Ordre : 3 puis 1" (order: 3 then 1), "Lancer la séquence" (run the sequence), "Éditer d'abord" (edit first), "Tout" (all), "Fermer" (close), "Arrêter après cette étape" (stop after this step).*
 
 ## Keys
 
@@ -75,8 +73,3 @@ To try a local copy: `claude --plugin-dir ./step-chain`.
 
 Based on next-steps by Thariq Shihipar. MIT, see [LICENSE](LICENSE).
 
----
-
-### En français
-
-Variante de next-steps : après chaque tour, cochez plusieurs suggestions (`1`, `2`, `3`) dans l'ordre voulu, puis `4` les lance une à une, chaque étape partant quand la précédente a fini. `5` met la première en brouillon, `6` coche tout, `7` arrête après l'étape en cours, `0` ferme. À utiliser à la place de next-steps, pas en plus.

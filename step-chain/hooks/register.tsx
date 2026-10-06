@@ -1,24 +1,24 @@
 /* @jsxRuntime classic */
 /* @jsx h */
 /* @jsxFrag Fragment */
-// step-chain: variante locale de next-steps (Thariq Shihipar, MIT).
-// Quand un tour se termine, on forke la session (le cache du prompt est partagé)
-// pour obtenir jusqu'à trois prochaines demandes probables, dessinées en boutons
-// 1/2/3 dans la bande au-dessus de la zone de saisie. Différence avec l'original :
-// 1/2/3 COCHENT au lieu de remplir le brouillon ; le rang suit l'ordre des appuis ;
-// 4 lance la séquence, une étape à la fois ($.prompt.submit), la suivante
-// partant quand la précédente se termine par une réponse ; 5 met la première
-// étape en brouillon (comportement d'origine) ; 6 coche tout ; 7 arrête après
-// l'étape en cours. Des chiffres, pas des lettres : un chiffre seul répond depuis
-// une zone de saisie vide, une lettre exigerait de d'abord donner le focus à la bande.
-// Le nettoyage des textes non fiables et le contrôle des commandes inconnues sont
-// ceux d'origine : les suggestions viennent d'un modèle qui lit du contenu non fiable.
+// step-chain: a variant of next-steps (Thariq Shihipar, MIT).
+// When a turn ends, the session is forked (the prompt cache is shared) to get
+// up to three likely next prompts, drawn as buttons 1/2/3 in the band above
+// the prompt box. Difference from the original: 1/2/3 TICK instead of filling
+// the draft, and the rank follows the order of the presses; 4 runs the sequence,
+// one step at a time ($.prompt.submit), each step leaving when the previous one
+// ends with an answer; 5 puts the first step in the draft (the original
+// behaviour); 6 ticks everything; 7 stops after the current step. Digits, not
+// letters: a digit alone answers from an empty prompt box, a letter would need
+// the band to get focus first. The cleaning of untrusted text and the check of
+// unknown commands come from the original: suggestions come from a model that
+// reads untrusted content.
 
 import type { CommandInfo, EngineInterface, Register, RenderElement, Timer } from 'claude-code'
 
 type Suggestion = { label: string; prompt: string }
 
-// Une séquence en cours : les étapes dans l'ordre d'envoi, l'étape courante, l'arrêt demandé.
+// A running sequence: the steps in sending order, the current step, whether a stop was asked.
 type Run = { steps: Suggestion[]; index: number; stopRequested: boolean }
 
 type SequenceEnd =
@@ -154,14 +154,14 @@ function parseSuggestions(reply: string, known: ReadonlySet<string> | null): Sug
 }
 
 // --- pure:start
-// Décisions de la séquence, sans effet de bord : testables à part.
+// Sequence decisions, without side effects: testable on their own.
 
 const togglePick = (picked: readonly number[], index: number): number[] =>
   picked.includes(index) ? picked.filter(pickedIndex => pickedIndex !== index) : [...picked, index]
 
 const pickAll = (count: number): number[] => Array.from({ length: count }, (_, index) => index)
 
-// Rang d'envoi d'une suggestion cochée (1 = la première), 0 si elle n'est pas cochée.
+// Sending rank of a ticked suggestion (1 = the first), 0 when it is not ticked.
 const rankOf = (picked: readonly number[], index: number): number => picked.indexOf(index) + 1
 
 const rankMarkOf = (rank: number): string => RANK_MARKS[rank - 1] ?? String(rank)
@@ -171,12 +171,12 @@ const stepsOf = (items: readonly Suggestion[], picked: readonly number[]): Sugge
 
 type AfterTurn = { action: 'send'; run: Run } | { action: 'end'; end: SequenceEnd }
 
-// Que faire quand le tour d'une étape se termine : envoyer la suivante, finir, ou s'arrêter.
+// What to do when a step's turn ends: send the next one, finish, or stop.
 const afterTurn = (run: Run, turnReason: string): AfterTurn => {
   if (turnReason !== 'answer') {
     return {
       action: 'end',
-      end: { outcome: 'stopped', steps: run.steps, doneCount: run.index, reason: "l'étape n'a pas fini par une réponse" },
+      end: { outcome: 'stopped', steps: run.steps, doneCount: run.index, reason: 'the step did not end with an answer' },
     }
   }
   const doneCount = run.index + 1
@@ -184,7 +184,7 @@ const afterTurn = (run: Run, turnReason: string): AfterTurn => {
     return { action: 'end', end: { outcome: 'finished', steps: run.steps } }
   }
   if (run.stopRequested) {
-    return { action: 'end', end: { outcome: 'stopped', steps: run.steps, doneCount, reason: 'arrêt demandé' } }
+    return { action: 'end', end: { outcome: 'stopped', steps: run.steps, doneCount, reason: 'stop requested' } }
   }
   return { action: 'send', run: { ...run, index: run.index + 1 } }
 }
@@ -210,7 +210,7 @@ function endSequence($: EngineInterface, end: SequenceEnd): void {
   })
 }
 
-// Envoie l'étape courante ; elle part quand la session est libre. Un refus ou une erreur arrête la séquence.
+// Sends the current step; it leaves when the session is free. A refusal or an error stops the sequence.
 async function sendStep($: EngineInterface, run: Run): Promise<void> {
   const step = run.steps[run.index]
   if (step === undefined) return
@@ -218,7 +218,7 @@ async function sendStep($: EngineInterface, run: Run): Promise<void> {
   try {
     const result = await $.prompt.submit({ text: step.prompt })
     if (result.drop === undefined) return
-    endSequence($, { outcome: 'stopped', steps: run.steps, doneCount: run.index, reason: `refusée : ${result.drop}` })
+    endSequence($, { outcome: 'stopped', steps: run.steps, doneCount: run.index, reason: `refused: ${result.drop}` })
   } catch (error) {
     endSequence($, { outcome: 'stopped', steps: run.steps, doneCount: run.index, reason: String(error) })
   }
@@ -245,7 +245,7 @@ function launchSequence($: EngineInterface, items: Suggestion[], picked: number[
   void sendStep($, { steps, index: 0, stopRequested: false })
 }
 
-// « e » : la première étape cochée devient un brouillon à éditer, comme dans next-steps d'origine.
+// Key 5: the first ticked step becomes a draft to edit, as in the original next-steps.
 function draftFirstStep($: EngineInterface, items: Suggestion[], picked: number[]): void {
   const first = stepsOf(items, picked)[0]
   if (first === undefined) return
@@ -260,13 +260,13 @@ export const register: Register = (on, options) => {
   const minTurnChars = typeof options?.minAnswerChars === 'number' ? options.minAnswerChars : 80
   const suggestsSkills = options?.suggestSkills !== false
 
-  // Un nouveau tour cache ce qui était proposé, sauf la séquence en cours : ses propres tours arrivent ici.
+  // A new turn hides what was offered, except a running sequence: its own turns arrive here.
   on('turn.start', async ($, e, next) => {
     if (view.kind !== 'hidden' && view.kind !== 'running') show($, { kind: 'hidden' })
     return next(e)
   })
 
-  // Turn over: pendant une séquence on enchaîne ; sinon on demande les suggestions au fork, en tâche détachée.
+  // Turn over: during a sequence, go on to the next step; otherwise ask the fork for suggestions, detached.
   on('turn.complete', async ($, e, next) => {
     const result = await next(e)
     if (view.kind === 'running') {
@@ -323,7 +323,7 @@ export const register: Register = (on, options) => {
           {below}
           <Box marginTop={1} marginLeft={1} flexDirection="column">
             <Text>
-              Séquence <Text dimColor>{run.index + 1}/{run.steps.length}</Text>
+              Sequence <Text dimColor>{run.index + 1}/{run.steps.length}</Text>
             </Text>
             {run.steps.map((step, index) => (
               <Text key={`r${index}`} dimColor={index !== run.index} bold={index === run.index} wrap="truncate-end">
@@ -332,10 +332,10 @@ export const register: Register = (on, options) => {
             ))}
             {rule}
             {run.stopRequested ? (
-              <Text dimColor>Arrêt demandé : la suite ne partira pas.</Text>
+              <Text dimColor>Stop requested: the next steps will not run.</Text>
             ) : (
               <Box>
-                <Button hotkey="7" plain label="Arrêter après cette étape" onPress={() => requestStop($)} />
+                <Button hotkey="7" plain label="Stop after this step" onPress={() => requestStop($)} />
               </Box>
             )}
           </Box>
@@ -352,8 +352,8 @@ export const register: Register = (on, options) => {
           <Box marginTop={1} marginLeft={1} flexDirection="column">
             <Text color={end.outcome === 'finished' ? 'green' : 'yellow'}>
               {end.outcome === 'finished'
-                ? `Séquence terminée ${doneCount}/${end.steps.length}`
-                : `Séquence arrêtée après ${doneCount}/${end.steps.length} : ${end.reason}`}
+                ? `Sequence finished ${doneCount}/${end.steps.length}`
+                : `Sequence stopped after ${doneCount}/${end.steps.length}: ${end.reason}`}
             </Text>
             {end.steps.map((step, index) => (
               <Text key={`d${index}`} dimColor wrap="truncate-end">
@@ -387,7 +387,7 @@ export const register: Register = (on, options) => {
         {rule}
         {picked.length === 0 ? null : (
           <Box flexDirection="column">
-            <Text dimColor>Ordre : {picked.map(index => index + 1).join(' puis ')}</Text>
+            <Text dimColor>Order: {picked.map(index => index + 1).join(' then ')}</Text>
             {stepsOf(items, picked).map((step, position) => (
               <Text key={`p${position}`} dimColor wrap="truncate-end">
                 {'  '}{rankMarkOf(position + 1)} {step.prompt}
@@ -398,18 +398,18 @@ export const register: Register = (on, options) => {
         <Box>
           {picked.length === 0 ? null : (
             <Box marginRight={2}>
-              <Button hotkey="4" plain label="Lancer la séquence" onPress={() => launchSequence($, items, picked)} />
+              <Button hotkey="4" plain label="Run the sequence" onPress={() => launchSequence($, items, picked)} />
             </Box>
           )}
           {picked.length === 0 ? null : (
             <Box marginRight={2}>
-              <Button hotkey="5" plain label="Éditer d'abord" onPress={() => draftFirstStep($, items, picked)} />
+              <Button hotkey="5" plain label="Edit first" onPress={() => draftFirstStep($, items, picked)} />
             </Box>
           )}
           <Box marginRight={2}>
-            <Button hotkey="6" plain label="Tout" onPress={() => show($, { kind: 'offer', items, picked: pickAll(items.length) })} />
+            <Button hotkey="6" plain label="All" onPress={() => show($, { kind: 'offer', items, picked: pickAll(items.length) })} />
           </Box>
-          <Button hotkey="0" plain label="Fermer" onPress={() => show($, { kind: 'hidden' })} />
+          <Button hotkey="0" plain label="Close" onPress={() => show($, { kind: 'hidden' })} />
         </Box>
       </Box>
     )
