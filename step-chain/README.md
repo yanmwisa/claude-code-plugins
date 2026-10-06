@@ -1,4 +1,4 @@
-# next-steps-sequence
+# Step Chain
 
 A variant of [next-steps](https://github.com/anthropics/claude-plugins-community/tree/main/next-steps) by Thariq Shihipar (MIT). After each turn, Claude suggests up to three next prompts above the input box. Instead of picking one, you **tick several, in the order you want, and run them as a sequence**: each step is sent when the previous one has finished with an answer.
 
@@ -35,10 +35,12 @@ claude plugin marketplace add yanmwisa/claude-code-plugins
 ```
 
 ```bash
-claude plugin install next-steps-sequence@yanmwisa
+claude plugin install step-chain@yanmwisa
 ```
 
 Use it **instead of** `next-steps@claude-community`, not alongside it, or you will get two "next:" bands. Then start a new session.
+
+This plugin was called `next-steps-sequence` before version 0.3.0. If you installed it under that name, the marketplace moves you to `step-chain` on the next update.
 
 ## Options
 
@@ -64,10 +66,10 @@ It is a function-hooks plugin (`hooks/register.tsx`):
 ## Develop
 
 ```bash
-claude plugin validate ./next-steps-sequence
+claude plugin validate ./step-chain
 ```
 
-To try a local copy: `claude --plugin-dir ./next-steps-sequence`.
+To try a local copy: `claude --plugin-dir ./step-chain`.
 
 ## Credits and license
 

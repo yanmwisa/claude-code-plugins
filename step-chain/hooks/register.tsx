@@ -1,7 +1,7 @@
 /* @jsxRuntime classic */
 /* @jsx h */
 /* @jsxFrag Fragment */
-// next-steps-sequence: variante locale de next-steps (Thariq Shihipar, MIT).
+// step-chain: variante locale de next-steps (Thariq Shihipar, MIT).
 // Quand un tour se termine, on forke la session (le cache du prompt est partagé)
 // pour obtenir jusqu'à trois prochaines demandes probables, dessinées en boutons
 // 1/2/3 dans la bande au-dessus de la zone de saisie. Différence avec l'original :
