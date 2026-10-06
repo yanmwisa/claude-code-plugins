@@ -8,8 +8,8 @@
   },
   "plugins": [
     {
-      "name": "panneau-taches",
-      "source": "./panneau-taches",
+      "name": "task-band",
+      "source": "./task-band",
       "description": "A task band above the prompt that opens by itself: Claude plans multi-step work, ticks each task as it goes, and the band closes when everything is done.",
       "category": "productivity"
     },
@@ -19,5 +19,8 @@
       "description": "A variant of next-steps: tick several suggested next prompts, in the order you choose, and run them as a sequence, one step per turn.",
       "category": "productivity"
     }
-  ]
+  ],
+  "renames": {
+    "panneau-taches": "task-band"
+  }
 }

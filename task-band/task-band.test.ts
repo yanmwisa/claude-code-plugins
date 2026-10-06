@@ -1,7 +1,7 @@
 import { test, expect } from 'claude-code/testing'
 
-const TOOL = 'mcp__panneau-taches__taches'
-const LOST_LIST = 'panneau-taches: liste perdue, refais un plan.'
+const TOOL = 'mcp__task-band__tasks'
+const LOST_LIST = 'task-band: liste perdue, refais un plan.'
 
 // Ce que le moteur rend d'un appel refusé : le texte du refus, où qu'il soit rangé.
 const textOf = (answer: unknown): string => JSON.stringify(answer)

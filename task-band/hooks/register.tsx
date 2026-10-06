@@ -3,7 +3,7 @@ import type { EngineInterface, Register, RenderElement, Timer } from 'claude-cod
 
 import type { BandMode, Task, TaskStatus } from '../types'
 
-const TOOL = 'mcp__panneau-taches__taches'
+const TOOL = 'mcp__task-band__tasks'
 const STATUSES: readonly TaskStatus[] = ['pending', 'in_progress', 'done']
 const AUTO_HIDE_MS = 5000
 const BAR_WIDTH = 10
@@ -14,14 +14,14 @@ const MAX_RULE_WIDTH = 48
 
 // Lu par Claude à côté de chaque demande, jamais montré à l'utilisateur.
 const PLANNING_REMINDER =
-  `Rappel du mod panneau-taches : si la demande comporte deux étapes ou plus, appelle d'abord l'outil ${TOOL} ` +
+  `Rappel du plugin task-band : si la demande comporte deux étapes ou plus, appelle d'abord l'outil ${TOOL} ` +
   'avec action "plan" (une entrée par tâche), puis action "update" pour chaque tâche : status "done" dès qu\'elle ' +
   'est finie. Pour une simple question, ne planifie pas.'
 
-const tasksState = atom({ plugin: 'panneau-taches', key: 'tasks' } as const, [])
-const modeState = atom({ plugin: 'panneau-taches', key: 'mode' } as const, 'list')
-const cursorState = atom({ plugin: 'panneau-taches', key: 'cursor' } as const, 0)
-const isHiddenState = atom({ plugin: 'panneau-taches', key: 'isHidden' } as const, false)
+const tasksState = atom({ plugin: 'task-band', key: 'tasks' } as const, [])
+const modeState = atom({ plugin: 'task-band', key: 'mode' } as const, 'list')
+const cursorState = atom({ plugin: 'task-band', key: 'cursor' } as const, 0)
+const isHiddenState = atom({ plugin: 'task-band', key: 'isHidden' } as const, false)
 
 let hideTimer: Timer | undefined
 
@@ -49,19 +49,19 @@ function parseTaskAction(input: Record<string, unknown>): Parsed {
       ? input.titles.filter((title): title is string => typeof title === 'string' && title.trim() !== '')
       : []
     if (titles.length === 0) {
-      return { error: 'panneau-taches: "plan" exige une liste "titles" non vide.' }
+      return { error: 'task-band: "plan" exige une liste "titles" non vide.' }
     }
     return { action: { kind: 'plan', titles } }
   }
 
   if (input.action === 'update') {
     if (typeof input.id !== 'number' || !isStatus(input.status)) {
-      return { error: 'panneau-taches: "update" exige "id" (nombre) et "status" (pending, in_progress, done).' }
+      return { error: 'task-band: "update" exige "id" (nombre) et "status" (pending, in_progress, done).' }
     }
     return { action: { kind: 'update', id: input.id, status: input.status } }
   }
 
-  return { error: 'panneau-taches: "action" doit valoir "plan" ou "update".' }
+  return { error: 'task-band: "action" doit valoir "plan" ou "update".' }
 }
 
 // Il y a toujours une tâche en cours tant qu'il en reste : la première à faire est promue.
@@ -84,10 +84,10 @@ function applyTaskAction(current: Task[], request: TaskAction): { tasks: Task[] 
 
   // Liste vide : jamais planifiée, ou perdue à la reprise de session (l'état n'est pas conservé).
   if (current.length === 0) {
-    return { error: 'panneau-taches: liste perdue, refais un plan.' }
+    return { error: 'task-band: liste perdue, refais un plan.' }
   }
   if (!current.some(task => task.id === request.id)) {
-    return { error: `panneau-taches: aucune tâche numéro ${request.id}.` }
+    return { error: `task-band: aucune tâche numéro ${request.id}.` }
   }
   const updated = current.map(task => (task.id === request.id ? { ...task, status: request.status } : task))
   return { tasks: withCurrentTask(updated) }
@@ -188,7 +188,7 @@ async function showFocus($: EngineInterface): Promise<void> {
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.tool.register({
-      name: 'taches',
+      name: 'tasks',
       description:
         "Suivi des tâches affiché automatiquement au-dessus de la zone de saisie de l'utilisateur. Dès qu'une demande " +
         'comporte plusieurs étapes, appelle d\'abord action "plan" avec la liste "titles" (une entrée par tâche). ' +
@@ -205,7 +205,7 @@ export const register: Register = on => {
         required: ['action'],
       },
     })
-    await $.command.register({ name: 'taches', description: 'Affiche ou masque la bande des tâches' })
+    await $.command.register({ name: 'tasks', description: 'Affiche ou masque la bande des tâches' })
 
     return next(e)
   })
@@ -217,7 +217,7 @@ export const register: Register = on => {
     return next({ ...e, context: [...(e.context ?? []), PLANNING_REMINDER] })
   })
 
-  on('command.run', { command: 'taches' }, async $ => {
+  on('command.run', { command: 'tasks' }, async $ => {
     const tasks = await read($, tasksState)
     if (tasks.length === 0) {
       return { text: 'Aucune tâche en cours.' }
