@@ -1,15 +1,23 @@
 {
-  "name": "next-steps-sequence",
-  "version": "0.2.0",
+  "name": "step-chain",
+  "displayName": "Step Chain",
+  "version": "0.3.0",
   "description": "A variant of next-steps: tick several suggested next prompts, in the order you choose, and run them as a sequence, one step per turn. Stops on interruption or error.",
   "author": {
     "name": "Yannick (yanmwisa)",
     "url": "https://github.com/yanmwisa"
   },
-  "homepage": "https://github.com/yanmwisa/claude-code-plugins/tree/main/next-steps-sequence",
+  "homepage": "https://github.com/yanmwisa/claude-code-plugins/tree/main/step-chain",
   "repository": "https://github.com/yanmwisa/claude-code-plugins",
   "license": "MIT",
-  "keywords": ["suggestions", "next-steps", "sequence", "prompt", "function-hooks", "ui"],
+  "keywords": [
+    "suggestions",
+    "next-steps",
+    "sequence",
+    "prompt",
+    "function-hooks",
+    "ui"
+  ],
   "userConfig": {
     "minAnswerChars": {
       "type": "number",

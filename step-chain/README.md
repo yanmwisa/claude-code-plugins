@@ -1,4 +1,4 @@
-# next-steps-sequence
+# Step Chain
 
 A variant of [next-steps](https://github.com/anthropics/claude-plugins-community/tree/main/next-steps) by Thariq Shihipar (MIT). After each turn, Claude suggests up to three next prompts above the input box. Instead of picking one, you **tick several, in the order you want, and run them as a sequence**: each step is sent when the previous one has finished with an answer.
 
@@ -7,11 +7,9 @@ next:
   1: ☑ ② Run the tests
   2: ☐ Commit
   3: ☑ ① Push the branch
-Ordre : 3 puis 1
-4 Lancer la séquence   5 Éditer d'abord   6 Tout   0 Fermer
+Order: 3 then 1
+4 Run the sequence   5 Edit first   6 All   0 Close
 ```
-
-*Interface labels are in French: "Ordre : 3 puis 1" (order: 3 then 1), "Lancer la séquence" (run the sequence), "Éditer d'abord" (edit first), "Tout" (all), "Fermer" (close), "Arrêter après cette étape" (stop after this step).*
 
 ## Keys
 
@@ -35,10 +33,12 @@ claude plugin marketplace add yanmwisa/claude-code-plugins
 ```
 
 ```bash
-claude plugin install next-steps-sequence@yanmwisa
+claude plugin install step-chain@yanmwisa
 ```
 
 Use it **instead of** `next-steps@claude-community`, not alongside it, or you will get two "next:" bands. Then start a new session.
+
+This plugin was called `next-steps-sequence` before version 0.3.0. If you installed it under that name, the marketplace moves you to `step-chain` on the next update.
 
 ## Options
 
@@ -64,17 +64,12 @@ It is a function-hooks plugin (`hooks/register.tsx`):
 ## Develop
 
 ```bash
-claude plugin validate ./next-steps-sequence
+claude plugin validate ./step-chain
 ```
 
-To try a local copy: `claude --plugin-dir ./next-steps-sequence`.
+To try a local copy: `claude --plugin-dir ./step-chain`.
 
 ## Credits and license
 
 Based on next-steps by Thariq Shihipar. MIT, see [LICENSE](LICENSE).
 
----
-
-### En français
-
-Variante de next-steps : après chaque tour, cochez plusieurs suggestions (`1`, `2`, `3`) dans l'ordre voulu, puis `4` les lance une à une, chaque étape partant quand la précédente a fini. `5` met la première en brouillon, `6` coche tout, `7` arrête après l'étape en cours, `0` ferme. À utiliser à la place de next-steps, pas en plus.

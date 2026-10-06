@@ -1,14 +1,22 @@
 {
-  "name": "panneau-taches",
-  "version": "0.2.0",
+  "name": "task-band",
+  "displayName": "Task Band",
+  "version": "0.3.0",
   "description": "A task band above the prompt that opens by itself: Claude plans multi-step work, ticks each task as it goes, and the band closes when everything is done. Three views: list, single line, focus.",
   "author": {
     "name": "Yannick (yanmwisa)",
     "url": "https://github.com/yanmwisa"
   },
-  "homepage": "https://github.com/yanmwisa/claude-code-plugins/tree/main/panneau-taches",
+  "homepage": "https://github.com/yanmwisa/claude-code-plugins/tree/main/task-band",
   "repository": "https://github.com/yanmwisa/claude-code-plugins",
   "license": "MIT",
-  "keywords": ["tasks", "todo", "progress", "planning", "function-hooks", "ui"],
+  "keywords": [
+    "tasks",
+    "todo",
+    "progress",
+    "planning",
+    "function-hooks",
+    "ui"
+  ],
   "types": "./types/index.d.ts"
 }
