@@ -12,11 +12,11 @@ const NARROW_BAND_COLUMNS = 44
 const MIN_RULE_WIDTH = 8
 const MAX_RULE_WIDTH = 48
 
-// Lu par Claude à côté de chaque demande, jamais montré à l'utilisateur.
+// Read by Claude next to each prompt, never shown to the user.
 const PLANNING_REMINDER =
-  `Rappel du plugin task-band : si la demande comporte deux étapes ou plus, appelle d'abord l'outil ${TOOL} ` +
-  'avec action "plan" (une entrée par tâche), puis action "update" pour chaque tâche : status "done" dès qu\'elle ' +
-  'est finie. Pour une simple question, ne planifie pas.'
+  `Reminder from the task-band plugin: if the request has two steps or more, first call the ${TOOL} tool ` +
+  'with action "plan" (one entry per task), then action "update" for each task: status "done" as soon as it ' +
+  'is finished. For a simple question, do not plan.'
 
 const tasksState = atom({ plugin: 'task-band', key: 'tasks' } as const, [])
 const modeState = atom({ plugin: 'task-band', key: 'mode' } as const, 'list')
@@ -25,7 +25,7 @@ const isHiddenState = atom({ plugin: 'task-band', key: 'isHidden' } as const, fa
 
 let hideTimer: Timer | undefined
 
-// --- pure:start (décisions sans effet ; testées hors moteur)
+// --- pure:start (decisions without side effects; tested outside the engine)
 
 type TaskAction =
   | { kind: 'plan'; titles: string[] }
@@ -42,29 +42,29 @@ type BandView =
 
 const isStatus = (value: unknown): value is TaskStatus => STATUSES.includes(value as TaskStatus)
 
-// Frontière : l'entrée de l'outil vient du modèle, donc non fiable.
+// Boundary: the tool input comes from the model, so it is not trusted.
 function parseTaskAction(input: Record<string, unknown>): Parsed {
   if (input.action === 'plan') {
     const titles = Array.isArray(input.titles)
       ? input.titles.filter((title): title is string => typeof title === 'string' && title.trim() !== '')
       : []
     if (titles.length === 0) {
-      return { error: 'task-band: "plan" exige une liste "titles" non vide.' }
+      return { error: 'task-band: "plan" needs a non-empty "titles" list.' }
     }
     return { action: { kind: 'plan', titles } }
   }
 
   if (input.action === 'update') {
     if (typeof input.id !== 'number' || !isStatus(input.status)) {
-      return { error: 'task-band: "update" exige "id" (nombre) et "status" (pending, in_progress, done).' }
+      return { error: 'task-band: "update" needs "id" (a number) and "status" (pending, in_progress, done).' }
     }
     return { action: { kind: 'update', id: input.id, status: input.status } }
   }
 
-  return { error: 'task-band: "action" doit valoir "plan" ou "update".' }
+  return { error: 'task-band: "action" must be "plan" or "update".' }
 }
 
-// Il y a toujours une tâche en cours tant qu'il en reste : la première à faire est promue.
+// While tasks remain there is always one in progress: the first one to do is promoted.
 function withCurrentTask(tasks: Task[]): Task[] {
   if (tasks.some(task => task.status === 'in_progress')) {
     return tasks
@@ -82,12 +82,12 @@ function applyTaskAction(current: Task[], request: TaskAction): { tasks: Task[] 
     return { tasks: withCurrentTask(planned) }
   }
 
-  // Liste vide : jamais planifiée, ou perdue à la reprise de session (l'état n'est pas conservé).
+  // Empty list: never planned, or lost when the session resumed (the state is not kept).
   if (current.length === 0) {
-    return { error: 'task-band: liste perdue, refais un plan.' }
+    return { error: 'task-band: the list was lost, plan again.' }
   }
   if (!current.some(task => task.id === request.id)) {
-    return { error: `task-band: aucune tâche numéro ${request.id}.` }
+    return { error: `task-band: no task number ${request.id}.` }
   }
   const updated = current.map(task => (task.id === request.id ? { ...task, status: request.status } : task))
   return { tasks: withCurrentTask(updated) }
@@ -110,7 +110,7 @@ const describeProgress = (tasks: Task[]): Progress => ({
 function describeOutcome(tasks: Task[]): string {
   const { done, total } = describeProgress(tasks)
   const current = tasks.find(task => task.status === 'in_progress')
-  return `${done}/${total} tâches terminées. ${current ? `En cours : ${current.title}.` : 'Tout est terminé.'}`
+  return `${done}/${total} tasks done. ${current ? `In progress: ${current.title}.` : 'All done.'}`
 }
 
 function describeBand(mode: BandMode, tasks: Task[], cursor: number): BandView {
@@ -149,20 +149,20 @@ const needsPlanningReminder = (promptText: string): boolean => promptText.trim()
 
 type ButtonKey = 'focus' | 'shrink' | 'grow' | 'previous' | 'next'
 
-// Toujours des mots : un bouton doit dire ce qu'il fait. Abrégés seulement quand la bande est très étroite.
+// Always words: a button says what it does. Shortened only when the band is very narrow.
 const BUTTON_LABELS: Record<ButtonKey, { wide: string; narrow: string }> = {
-  focus: { wide: 'Une à la fois', narrow: 'Une à la fois' },
-  shrink: { wide: 'Réduire', narrow: 'Réduire' },
-  grow: { wide: 'Agrandir', narrow: 'Agrandir' },
-  previous: { wide: 'Précédente', narrow: 'Préc.' },
-  next: { wide: 'Suivante', narrow: 'Suiv.' },
+  focus: { wide: 'One at a time', narrow: 'One by one' },
+  shrink: { wide: 'Shrink', narrow: 'Shrink' },
+  grow: { wide: 'Expand', narrow: 'Expand' },
+  previous: { wide: 'Previous', narrow: 'Prev' },
+  next: { wide: 'Next', narrow: 'Next' },
 }
 
 const isNarrowBand = (columns: number | undefined): boolean => (columns ?? 80) < NARROW_BAND_COLUMNS
 
 const labelOf = (key: ButtonKey, isNarrow: boolean): string => BUTTON_LABELS[key][isNarrow ? 'narrow' : 'wide']
 
-// Largeur du trait qui sépare la liste de ses commandes : la bande moins sa marge, bornée.
+// Width of the rule between the list and its buttons: the band minus its margin, within bounds.
 const ruleWidthOf = (columns: number | undefined): number =>
   Math.min(MAX_RULE_WIDTH, Math.max(MIN_RULE_WIDTH, (columns ?? 80) - 2))
 
@@ -190,10 +190,10 @@ export const register: Register = on => {
     await $.tool.register({
       name: 'tasks',
       description:
-        "Suivi des tâches affiché automatiquement au-dessus de la zone de saisie de l'utilisateur. Dès qu'une demande " +
-        'comporte plusieurs étapes, appelle d\'abord action "plan" avec la liste "titles" (une entrée par tâche). ' +
-        'Marque ensuite chaque tâche avec action "update" (id, status) : "in_progress" quand tu la commences, ' +
-        '"done" dès qu\'elle est terminée. La bande s\'ouvre et se ferme toute seule : ne demande rien à l\'utilisateur.',
+        "Task tracking shown automatically above the user's prompt. As soon as a request has several steps, " +
+        'first call action "plan" with the "titles" list (one entry per task). Then mark each task with ' +
+        'action "update" (id, status): "in_progress" when you start it, "done" as soon as it is finished. ' +
+        'The band opens and closes by itself: do not ask the user anything.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -205,7 +205,7 @@ export const register: Register = on => {
         required: ['action'],
       },
     })
-    await $.command.register({ name: 'tasks', description: 'Affiche ou masque la bande des tâches' })
+    await $.command.register({ name: 'tasks', description: 'Show or hide the task band' })
 
     return next(e)
   })
@@ -220,12 +220,12 @@ export const register: Register = on => {
   on('command.run', { command: 'tasks' }, async $ => {
     const tasks = await read($, tasksState)
     if (tasks.length === 0) {
-      return { text: 'Aucune tâche en cours.' }
+      return { text: 'No tasks in progress.' }
     }
     const wasHidden = await read($, isHiddenState)
     await update($, isHiddenState, () => !wasHidden)
 
-    return { text: wasHidden ? 'Bande des tâches affichée.' : 'Bande des tâches masquée.' }
+    return { text: wasHidden ? 'Task band shown.' : 'Task band hidden.' }
   })
 
   on('tool.call', { tool: TOOL }, async ($, e) => {
@@ -290,7 +290,7 @@ export const register: Register = on => {
 
     const isNarrow = isNarrowBand(e.props.bodyColumns)
 
-    // Mode réduit : une seule ligne, juste la tâche en cours, un petit bouton pour agrandir.
+    // Shrunk view: a single line, only the task in progress, and a small button to expand.
     if (view.kind === 'line') {
       return (
         <Box flexDirection="column">
@@ -310,7 +310,7 @@ export const register: Register = on => {
               </Text>
             </Box>
             <Box flexGrow={1} />
-            {renderButton('grow', 'a', labelOf('grow', isNarrow), toList)}
+            {renderButton('grow', 'e', labelOf('grow', isNarrow), toList)}
           </Box>
         </Box>
       )
@@ -322,12 +322,12 @@ export const register: Register = on => {
           ? []
           : [
               renderButton('focus', 'f', labelOf('focus', isNarrow), toFocus),
-              renderButton('line', 'r', labelOf('shrink', isNarrow), toLine),
+              renderButton('line', 's', labelOf('shrink', isNarrow), toLine),
             ]
         : [
             ...(view.canPrev ? [renderButton('prev', 'p', labelOf('previous', isNarrow), toPrevious)] : []),
-            ...(view.canNext ? [renderButton('next', 's', labelOf('next', isNarrow), toNext)] : []),
-            renderButton('list', 'a', labelOf('grow', isNarrow), toList),
+            ...(view.canNext ? [renderButton('next', 'n', labelOf('next', isNarrow), toNext)] : []),
+            renderButton('list', 'e', labelOf('grow', isNarrow), toList),
           ]
 
     const rows =
@@ -337,7 +337,7 @@ export const register: Register = on => {
             renderTask(view.shown),
             view.following === null ? null : (
               <Text key="following" dimColor wrap="truncate-end">
-                ensuite : {view.following.title}
+                next: {view.following.title}
               </Text>
             ),
           ]
@@ -348,11 +348,11 @@ export const register: Register = on => {
         <Box marginTop={1} marginLeft={1} flexDirection="column">
           <Box>
             <Text bold color={isFinished ? 'green' : undefined}>
-              Tâches
+              Tasks
             </Text>
             <Box marginLeft={1}>
               <Text color={isFinished ? 'green' : undefined} dimColor={!isFinished}>
-                {isFinished ? `${view.progress.total}/${view.progress.total} terminé` : `${view.progress.done}/${view.progress.total}`}
+                {isFinished ? `${view.progress.total}/${view.progress.total} done` : `${view.progress.done}/${view.progress.total}`}
               </Text>
             </Box>
             <Box marginLeft={1}>

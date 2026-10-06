@@ -3,24 +3,22 @@
 A task band above the Claude Code prompt that opens by itself. When a request has several steps, Claude plans it as a list of tasks, ticks each one as it goes, and the band closes a few seconds after the last task is done. You never have to ask for it.
 
 ```
-Tâches 2/4 █████░░░░░
+Tasks 2/4 █████░░░░░
 ✔ Copy the files
 ✔ Remove the old code
 ◐ Write the README
 ○ Run the validation
 ────────────────────────────
-f Une à la fois   r Réduire
+f One at a time   s Shrink
 ```
-
-*Interface labels are in French: "Tâches" (tasks), "Une à la fois" (one at a time), "Réduire" (shrink), "Agrandir" (expand), "Précédente" / "Suivante" (previous / next).*
 
 ## What you get
 
 - **A band that opens and closes by itself.** Claude calls the plugin's `tasks` tool with `plan` (one title per task), then `update` (`in_progress`, `done`) as it works. The band shows the progress bar and the list, and hides itself 5 seconds after everything is done.
 - **Three views**, switched with one key from an empty prompt box:
-  - list: every task with its status (`f` focus, `r` shrink);
-  - single line: only the current task and `done/total` (`a` to expand);
-  - focus: one task at a time (`p` previous, `s` next, `a` back to the list).
+  - list: every task with its status (`f` one at a time, `s` shrink);
+  - single line: only the current task and `done/total` (`e` to expand);
+  - focus: one task at a time (`p` previous, `n` next, `e` back to the list).
 - **`/tasks`** shows or hides the band by hand.
 - **A short reminder**, added to each prompt of 25 characters or more, asks Claude to plan multi-step requests with the tool. It is read by Claude only, never shown to you.
 
@@ -72,8 +70,3 @@ To try a local copy: `claude --plugin-dir ./task-band`.
 
 MIT, see [LICENSE](LICENSE).
 
----
-
-### En français
-
-Une bande de tâches au-dessus de la zone de saisie, qui s'ouvre toute seule : Claude découpe une demande en plusieurs étapes, coche chaque tâche au fur et à mesure, et la bande se ferme 5 secondes après la dernière. Trois affichages (liste, ligne, focus), la commande `/tasks` pour l'afficher ou la masquer. Aucun accès réseau, rien n'est écrit sur le disque.
