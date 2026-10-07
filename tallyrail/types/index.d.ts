@@ -4,7 +4,7 @@ export type BandMode = 'list' | 'line' | 'focus'
 
 declare module 'claude-code' {
   interface PluginState {
-    'task-band': {
+    'tallyrail': {
       tasks: Task[]
       mode: BandMode
       cursor: number

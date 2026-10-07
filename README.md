@@ -4,7 +4,7 @@ Two function-hook plugins for [Claude Code](https://claude.com/product/claude-co
 
 | Plugin | What it does |
 | --- | --- |
-| [**task-band**](task-band) | A task band above the prompt that opens by itself: Claude plans multi-step work, ticks each task as it goes, and the band closes when everything is done. |
+| [**tallyrail**](tallyrail) | A task band above the prompt that opens by itself: Claude plans multi-step work, ticks each task as it goes, and the band closes when everything is done. |
 | [**step-chain**](step-chain) | A variant of next-steps: tick several suggested next prompts, in the order you choose, and run them as a sequence, one step per turn. |
 
 The interface labels are in French; each README translates them.
@@ -18,7 +18,7 @@ claude plugin marketplace add yanmwisa/claude-code-plugins
 ```
 
 ```bash
-claude plugin install task-band@yanmwisa
+claude plugin install tallyrail@yanmwisa
 ```
 
 ```bash
@@ -39,7 +39,7 @@ A Claude Code version with function-hook plugins (`hooks/register.tsx`). These p
 
 ```
 .claude-plugin/marketplace.json   the marketplace listing
-task-band/                        one plugin per folder
+tallyrail/                        one plugin per folder
 step-chain/
 ```
 

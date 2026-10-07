@@ -3,7 +3,7 @@ import type { EngineInterface, Register, RenderElement, Timer } from 'claude-cod
 
 import type { BandMode, Task, TaskStatus } from '../types'
 
-const TOOL = 'mcp__task-band__tasks'
+const TOOL = 'mcp__tallyrail__tasks'
 const STATUSES: readonly TaskStatus[] = ['pending', 'in_progress', 'done']
 const AUTO_HIDE_MS = 5000
 const BAR_WIDTH = 10
@@ -14,14 +14,14 @@ const MAX_RULE_WIDTH = 48
 
 // Read by Claude next to each prompt, never shown to the user.
 const PLANNING_REMINDER =
-  `Reminder from the task-band plugin: if the request has two steps or more, first call the ${TOOL} tool ` +
+  `Reminder from the tallyrail plugin: if the request has two steps or more, first call the ${TOOL} tool ` +
   'with action "plan" (one entry per task), then action "update" for each task: status "done" as soon as it ' +
   'is finished. For a simple question, do not plan.'
 
-const tasksState = atom({ plugin: 'task-band', key: 'tasks' } as const, [])
-const modeState = atom({ plugin: 'task-band', key: 'mode' } as const, 'list')
-const cursorState = atom({ plugin: 'task-band', key: 'cursor' } as const, 0)
-const isHiddenState = atom({ plugin: 'task-band', key: 'isHidden' } as const, false)
+const tasksState = atom({ plugin: 'tallyrail', key: 'tasks' } as const, [])
+const modeState = atom({ plugin: 'tallyrail', key: 'mode' } as const, 'list')
+const cursorState = atom({ plugin: 'tallyrail', key: 'cursor' } as const, 0)
+const isHiddenState = atom({ plugin: 'tallyrail', key: 'isHidden' } as const, false)
 
 let hideTimer: Timer | undefined
 
@@ -49,19 +49,19 @@ function parseTaskAction(input: Record<string, unknown>): Parsed {
       ? input.titles.filter((title): title is string => typeof title === 'string' && title.trim() !== '')
       : []
     if (titles.length === 0) {
-      return { error: 'task-band: "plan" needs a non-empty "titles" list.' }
+      return { error: 'tallyrail: "plan" needs a non-empty "titles" list.' }
     }
     return { action: { kind: 'plan', titles } }
   }
 
   if (input.action === 'update') {
     if (typeof input.id !== 'number' || !isStatus(input.status)) {
-      return { error: 'task-band: "update" needs "id" (a number) and "status" (pending, in_progress, done).' }
+      return { error: 'tallyrail: "update" needs "id" (a number) and "status" (pending, in_progress, done).' }
     }
     return { action: { kind: 'update', id: input.id, status: input.status } }
   }
 
-  return { error: 'task-band: "action" must be "plan" or "update".' }
+  return { error: 'tallyrail: "action" must be "plan" or "update".' }
 }
 
 // While tasks remain there is always one in progress: the first one to do is promoted.
@@ -84,10 +84,10 @@ function applyTaskAction(current: Task[], request: TaskAction): { tasks: Task[] 
 
   // Empty list: never planned, or lost when the session resumed (the state is not kept).
   if (current.length === 0) {
-    return { error: 'task-band: the list was lost, plan again.' }
+    return { error: 'tallyrail: the list was lost, plan again.' }
   }
   if (!current.some(task => task.id === request.id)) {
-    return { error: `task-band: no task number ${request.id}.` }
+    return { error: `tallyrail: no task number ${request.id}.` }
   }
   const updated = current.map(task => (task.id === request.id ? { ...task, status: request.status } : task))
   return { tasks: withCurrentTask(updated) }

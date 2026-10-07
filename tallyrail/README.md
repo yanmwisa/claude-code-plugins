@@ -1,4 +1,4 @@
-# Task Band
+# Tallyrail
 
 A task band above the Claude Code prompt that opens by itself. When a request has several steps, Claude plans it as a list of tasks, ticks each one as it goes, and the band closes a few seconds after the last task is done. You never have to ask for it.
 
@@ -29,12 +29,12 @@ claude plugin marketplace add yanmwisa/claude-code-plugins
 ```
 
 ```bash
-claude plugin install task-band@yanmwisa
+claude plugin install tallyrail@yanmwisa
 ```
 
 Then start a new session.
 
-This plugin was called `panneau-taches` before version 0.3.0. If you installed it under that name, the marketplace moves you to `task-band` on the next update.
+This plugin was called `panneau-taches` before version 0.3.0, then `task-band` until version 0.4.0. If you installed it under either name, the marketplace moves you to `tallyrail` on the next update.
 
 ## How it works
 
@@ -43,14 +43,14 @@ It is a function-hooks plugin (`hooks/register.tsx`):
 | Hook | Role |
 | --- | --- |
 | `session.start` | registers the `tasks` tool and the `/tasks` command |
-| `tool.call` on `mcp__task-band__tasks` | validates `plan` / `update` and stores the tasks |
+| `tool.call` on `mcp__tallyrail__tasks` | validates `plan` / `update` and stores the tasks |
 | `prompt.submit` | adds the planning reminder to longer prompts |
 | `command.run` on `tasks` | shows or hides the band |
 | `ui.render` on `AbovePrompt` | draws the band |
 
 The `tasks` tool belongs to the plugin: `session.start` registers it, and the `tool.call` hook answers every call to it directly instead of passing it on, because no other implementation of `tasks` exists behind it. The `prompt.submit` hook only adds the reminder to the context Claude reads; it does not change the text you typed.
 
-The tasks live in the session's state (`$.state`) only. Pure decisions (parsing tool input, computing the view) are separated from effects and covered by `task-band.test.ts`.
+The tasks live in the session's state (`$.state`) only. Pure decisions (parsing tool input, computing the view) are separated from effects and covered by `tallyrail.test.ts`.
 
 ## Privacy
 
@@ -59,14 +59,14 @@ No network access, no files written, no process started. Task titles stay in the
 ## Develop
 
 ```bash
-claude plugin validate ./task-band
+claude plugin validate ./tallyrail
 ```
 
 ```bash
-claude plugin test ./task-band
+claude plugin test ./tallyrail
 ```
 
-To try a local copy: `claude --plugin-dir ./task-band`.
+To try a local copy: `claude --plugin-dir ./tallyrail`.
 
 ## License
 
