@@ -8,8 +8,8 @@
   },
   "plugins": [
     {
-      "name": "task-band",
-      "source": "./task-band",
+      "name": "tallyrail",
+      "source": "./tallyrail",
       "description": "A task band above the prompt that opens by itself: Claude plans multi-step work, ticks each task as it goes, and the band closes when everything is done.",
       "category": "productivity"
     },
@@ -21,7 +21,8 @@
     }
   ],
   "renames": {
-    "panneau-taches": "task-band",
+    "panneau-taches": "tallyrail",
+    "task-band": "tallyrail",
     "next-steps-sequence": "step-chain"
   }
 }

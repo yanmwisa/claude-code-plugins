@@ -22,15 +22,15 @@ Do not paste secrets, tokens or private conversation content.
    claude plugin validate ./<plugin> --strict
    ```
 
-   For task-band, also run the tests:
+   For tallyrail, also run the tests:
 
    ```bash
-   claude plugin test ./task-band
+   claude plugin test ./tallyrail
    ```
 
 4. If the behaviour changes, update the plugin's README and raise `version` in its `plugin.json`.
 
-Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/): `feat(task-band): …`, `fix(step-chain): …`. The body says why the change is needed.
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/): `feat(tallyrail): …`, `fix(step-chain): …`. The body says why the change is needed.
 
 ## Rules for plugin code
 

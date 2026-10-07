@@ -1,7 +1,7 @@
 import { test, expect } from 'claude-code/testing'
 
-const TOOL = 'mcp__task-band__tasks'
-const LOST_LIST = 'task-band: the list was lost, plan again.'
+const TOOL = 'mcp__tallyrail__tasks'
+const LOST_LIST = 'tallyrail: the list was lost, plan again.'
 
 // What the engine returns for a denied call: the denial text, wherever it is stored.
 const textOf = (answer: unknown): string => JSON.stringify(answer)
