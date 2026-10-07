@@ -58,6 +58,7 @@ It is a function-hooks plugin (`hooks/register.tsx`):
 
 ## Safety and privacy
 
+- **What the plugin sends.** The prompts it submits (`$.prompt.submit`) are exactly the suggestion texts shown in the band that you ticked, one per step, in the order you chose. It adds nothing to them and submits nothing you did not tick. Key `5` only puts the first ticked step in your prompt box (`$.prompt.fill`), and the first suggestion is offered as a greyed hint you can accept or ignore (`$.prompt.suggest`); neither sends anything by itself.
 - Suggestions come from a model that may have read untrusted content. The original sanitising and the unknown-command check are kept, and the text of every step is shown before you run it.
 - The only model call is the session fork (`$.model.fork`), inside your own Claude session. No other network access, no files written, no process started.
 
