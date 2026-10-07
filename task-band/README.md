@@ -48,6 +48,8 @@ It is a function-hooks plugin (`hooks/register.tsx`):
 | `command.run` on `tasks` | shows or hides the band |
 | `ui.render` on `AbovePrompt` | draws the band |
 
+The `tasks` tool belongs to the plugin: `session.start` registers it, and the `tool.call` hook answers every call to it directly instead of passing it on, because no other implementation of `tasks` exists behind it. The `prompt.submit` hook only adds the reminder to the context Claude reads; it does not change the text you typed.
+
 The tasks live in the session's state (`$.state`) only. Pure decisions (parsing tool input, computing the view) are separated from effects and covered by `task-band.test.ts`.
 
 ## Privacy
